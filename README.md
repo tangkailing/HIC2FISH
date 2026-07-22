@@ -184,8 +184,8 @@ The experimental DNA-FISH centroid is used only as an evaluation and visualizati
 
 ## Citation
 
-If you use HiC2FISH in your work, please cite the associated publication. Citation information will be added here.
+
 
 ## Contact
 
-For questions or reproducibility issues, please open an issue in this repository.
+

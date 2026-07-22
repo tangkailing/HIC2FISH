@@ -1,0 +1,35 @@
+# Example data
+
+This directory contains the compact inputs used by the default `python run.py` workflow.
+
+## Files
+
+### `example_hic.npy`
+
+A 50 × 50 bulk Hi-C contact matrix aligned to the 50 DNA-FISH probe loci. The matrix is normalized at runtime using the Hi-C training-partition scaler stored in `normalization_scalers.npz` and is supplied to the diffusion model as the conditioning matrix.
+
+### `example_dna_fish_centroid_um.npy`
+
+A 50 × 50 experimental DNA-FISH ensemble-centroid distance matrix in micrometres. This matrix is used only to calculate Centroid-PCC and to construct the experimental centroid visualization. It is not supplied to the denoising network and is not used to select generated cells.
+
+### `normalization_scalers.npz`
+
+Training-partition global normalization parameters with the following keys:
+
+```text
+hic_min_train
+hic_max_train
+dna_fish_min_train_um
+dna_fish_max_train_um
+```
+
+Hi-C and DNA-FISH scalers were calculated independently. The same values are used for input normalization and for restoring generated distance matrices to micrometres.
+
+## Expected shapes
+
+```text
+example_hic.npy                    (50, 50) or (50, 50, 1)
+example_dna_fish_centroid_um.npy   (50, 50)
+```
+
+All matrices must contain finite numeric values. The DNA-FISH reference must be symmetric, non-negative and have a zero-valued diagonal.

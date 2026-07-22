@@ -132,7 +132,7 @@ For the supplied example, 100 generated matrices produced a Centroid-PCC of appr
   <img src="docs/figures/hic2fish_example_output.png" width="900" alt="HiC2FISH example output">
 </p>
 
-The blue structure represents the experimental DNA-FISH ensemble centroid and the red structure represents the HiC2FISH-generated ensemble centroid. The structures are independently normalized before MDS and therefore illustrate relative geometry rather than absolute micrometre-scale agreement.
+The blue structure represents the experimental DNA-FISH ensemble centroid and the red structure represents the HiC2FISH-generated ensemble centroid. 
 
 ## Tutorial: preparing Hi-C and DNA-FISH data
 

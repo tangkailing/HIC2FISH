@@ -58,7 +58,7 @@ pip install -r requirements.txt
 The pretrained checkpoint and example input files should remain in their default directories:
 
 ```text
-pretrained/hic2fish_demo.pt
+pretrained/hic2fish.pt
 data/example_data/example_hic.npy
 data/example_data/example_dna_fish_centroid_um.npy
 data/example_data/normalization_scalers.npz
@@ -123,7 +123,7 @@ Generated files are written to `output/`. The principal outputs are:
 
 - `generated_single_cell_distances_um.npy`: generated single-cell distance matrices in micrometres;
 - `generated_ensemble_centroid_um.npy`: mean generated distance matrix;
-- `demo_summary.json`: settings, evaluation metrics and numerical-validity checks;
+- `summary.json`: settings, evaluation metrics and numerical-validity checks;
 - `centroid_3d_comparison.html`: interactive comparison of relative centroid geometry.
 
 For the supplied example, 100 generated matrices produced a Centroid-PCC of approximately 0.8612 and a generated mean pairwise PCC of approximately 0.0804. Small numerical differences can occur between software versions and hardware platforms.

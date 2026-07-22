@@ -4,7 +4,7 @@ This directory contains the pretrained HiC2FISH checkpoint used by `run.py`.
 
 ## File
 
-### `hic2fish_demo.pt`
+### `hic2fish.pt`
 
 PyTorch state dictionary for the `EnhancedUNet` architecture defined in `hic2fish/model.py`. The checkpoint expects:
 

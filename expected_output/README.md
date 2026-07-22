@@ -4,7 +4,7 @@ This directory contains a reference summary generated with the supplied checkpoi
 
 ## File
 
-### `demo_summary.json`
+### `summary.json`
 
 The summary records:
 

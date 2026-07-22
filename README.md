@@ -1,10 +1,12 @@
-<p align="center">
-  <img src="docs/figures/HiC2FISH_logo_white.png" width="280" alt="HiC2FISH logo">
-</p>
+<div align="center">
+  <img src="docs/figures/HiC2FISH_logo_readme.png"
+       width="210"
+       alt="HiC2FISH logo">
 
-# HiC2FISH
-
-A conditional diffusion framework for generating single-cell DNA-FISH distance matrices from bulk Hi-C contact maps.
+  <p>
+    <strong>A conditional diffusion framework for generating single-cell DNA-FISH distance matrices from bulk Hi-C contact maps</strong>
+  </p>
+</div>
 
 <p align="center">
   <img src="docs/figures/hic2fish_workflow.png" width="900" alt="HiC2FISH workflow">

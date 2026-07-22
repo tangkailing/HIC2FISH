@@ -11,7 +11,7 @@ This directory contains the reusable implementation of the HiC2FISH generation, 
 | `io.py` | Checkpoint loading, scaler loading, matrix selection and device handling |
 | `metrics.py` | Lower-triangle vectorization, Pearson correlation, diversity and validity checks |
 | `visualization.py` | Relative-distance normalization, metric MDS and interactive 3D output |
-| `demo.py` | End-to-end generation and evaluation orchestration |
+| `test.py` | End-to-end generation and evaluation orchestration |
 | `preprocessing.py` | DNA-FISH coordinate processing, `.mcool` extraction and dataset construction |
 | `constants.py` | Shared 50-locus matrix dimensions |
 | `__init__.py` | Package metadata |

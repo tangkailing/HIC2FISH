@@ -12,11 +12,11 @@ The evaluation metrics reported by the example workflow are calculated using the
 
 ### `example_hic.npy`
 
-A 50 × 50 bulk Hi-C contact matrix aligned to the 50 DNA-FISH probe loci. The matrix is normalized at runtime using the Hi-C training-partition scaler stored in `normalization_scalers.npz` and is supplied to the diffusion model as the conditioning matrix.
+A  bulk Hi-C contact matrix aligned to the DNA-FISH probe loci. The matrix is normalized at runtime using the Hi-C training-partition scaler stored in `normalization_scalers.npz` and is supplied to the diffusion model as the conditioning matrix.
 
 ### `example_dna_fish_centroid_um.npy`
 
-A 50 × 50 experimental DNA-FISH ensemble-centroid distance matrix in micrometres. This matrix is used only to calculate Centroid-PCC and to construct the experimental centroid visualization. It is not supplied to the denoising network and is not used to select generated cells.
+A experimental DNA-FISH ensemble-centroid distance matrix in micrometres. This matrix is used only to calculate Centroid-PCC and to construct the experimental centroid visualization. It is not supplied to the denoising network and is not used to select generated cells.
 
 ### `normalization_scalers.npz`
 

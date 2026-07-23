@@ -6,7 +6,7 @@ This directory contains matched Hi-C–DNA-FISH arrays produced by `preprocess_h
 
 All processed arrays in this directory were derived from paired K562 datasets obtained from the 4D Nucleome Data Portal: the bulk in situ Hi-C contact matrix [`4DNFI18UHVRO`](https://data.4dnucleome.org/files-processed/4DNFI18UHVRO/) and the multiplexed DNA-FISH experiment set [`4DNEST5FUQKC`](https://data.4dnucleome.org/experiment-set-replicates/4DNEST5FUQKC/). Data were restricted to the chromosome 21 interval `chr21:28,000,000–30,000,000`, and the Hi-C and DNA-FISH measurements were aligned to the same genomic window and ordered probe loci before constructing the conditioning–target pairs.
 
-Because the Hi-C map represents a population-level measurement, the same Hi-C conditioning matrix is paired with multiple single-cell DNA-FISH distance matrices from the corresponding K562 genomic window; this pairing does not imply a one-to-one correspondence between individual Hi-C and DNA-FISH cells.
+Because the Hi-C map represents a population-level measurement, the same Hi-C conditioning matrix is paired with multiple single-cell DNA-FISH distance matrices from the corresponding K562 genomic window.
 
 ## Files
 

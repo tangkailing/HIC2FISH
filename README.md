@@ -9,7 +9,7 @@
 </div>
 
 <p align="center">
-  <img src="docs/figures/hic2fish_workflow.png" width="900" alt="HiC2FISH workflow">
+  <img src="docs/figures/workflow.png" width="900" alt="HiC2FISH workflow">
 </p>
 
 ## Description

@@ -1,5 +1,3 @@
-
-
 from __future__ import annotations
 
 import argparse
@@ -33,7 +31,7 @@ EXAMPLE_DATA_DIR = REPOSITORY_ROOT / "data" / "example_data"
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
-        description="Minimal HiC2FISH ensemble-centroid."
+        description="Generate and evaluate a HiC2FISH single-cell ensemble."
     )
     parser.add_argument(
         "--model-path",
@@ -94,6 +92,15 @@ def validate_arguments(args: argparse.Namespace) -> None:
         raise ValueError("--num-samples must be at least 2.")
     if args.ddim_steps < 1 or args.generation_batch_size < 1:
         raise ValueError("DDIM steps and generation batch size must be positive.")
+
+
+def portable_path(path: Path | str) -> str:
+    """Return a repository-relative path when possible."""
+    resolved = Path(path).expanduser().resolve()
+    try:
+        return resolved.relative_to(REPOSITORY_ROOT).as_posix()
+    except ValueError:
+        return str(resolved)
 
 
 def run(args: argparse.Namespace) -> dict[str, object]:
@@ -171,8 +178,12 @@ def run(args: argparse.Namespace) -> dict[str, object]:
         output_dir=args.output_dir,
         random_state=args.base_seed,
     )
+    visualization_summary = dict(visualization)
+    visualization_summary["html_path"] = portable_path(
+        visualization["html_path"]
+    )
     summary: dict[str, object] = {
-        "checkpoint": str(args.model_path),
+        "checkpoint": portable_path(args.model_path),
         "num_generated_cells": args.num_samples,
         "ddim_steps": args.ddim_steps,
         "eta": 0.0,
@@ -190,14 +201,14 @@ def run(args: argparse.Namespace) -> dict[str, object]:
             "dna_fish_max_train_um": fish_max_um,
         },
         "validity": validity,
-        "visualization": visualization,
+        "visualization": visualization_summary,
     }
     with (args.output_dir / "summary.json").open(
         "w", encoding="utf-8"
     ) as handle:
         json.dump(summary, handle, indent=2, ensure_ascii=False)
 
-    print("\nHiC2FISH centroid  completed.")
+    print("\nHiC2FISH centroid completed.")
     print(f"Centroid-PCC: {centroid_pcc:.4f}")
     print(f"Generated mean pairwise PCC: {generated_diversity:.4f}")
     print(f"Output directory: {args.output_dir}")

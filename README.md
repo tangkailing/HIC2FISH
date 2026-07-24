@@ -56,15 +56,17 @@ Core dependencies include:
 Clone the repository and install the required packages:
 
 ```bash
+git lfs install
 git clone https://github.com/tangkailing/HIC2FISH.git
 cd HIC2FISH
+git lfs pull
 python -m venv .venv
 source .venv/bin/activate
 python -m pip install --upgrade pip
 python -m pip install -r requirements.txt
 ```
 
-For Windows PowerShell, activate the environment with `.venv\Scripts\Activate.ps1` before installing requirements. The pretrained checkpoint and example input files should remain in their default directories:
+Install [Git LFS](https://git-lfs.com/) before cloning so the pretrained checkpoint and NumPy data are downloaded as real files rather than pointer text. For Windows PowerShell, activate the environment with `.venv\Scripts\Activate.ps1` before installing requirements. The pretrained checkpoint and example input files should remain in their default directories:
 
 ```text
 pretrained/hic2fish.pt
@@ -145,13 +147,13 @@ The blue structure represents the experimental DNA-FISH ensemble centroid and th
 
 ### 4. Lightweight CPU installation check
 
-After installation, verify imports, shape handling and CPU checkpoint loading without launching full ensemble generation:
+After Git LFS files have been downloaded, run a deliberately reduced two-sample, one-step inference to verify model loading, shape handling, CPU execution and output writing:
 
 ```bash
-python run.py --device cpu --num-samples 2 --ddim-steps 1 --generation-batch-size 1
+python run.py --device cpu --num-samples 2 --ddim-steps 1 --generation-batch-size 1 --output-dir output/cpu_smoke_test
 ```
 
-This smoke test should complete on a CPU-only machine and writes the same output file names as a full run.
+This is an actual reduced inference run rather than the default 100-sample workflow. Its files are written to `output/cpu_smoke_test/` so the supplied reference output is not overwritten.
 
 ## NumPy input shapes
 
@@ -229,5 +231,4 @@ The experimental DNA-FISH centroid is used only as an evaluation and visualizati
 
 
 ## Contact
-
 

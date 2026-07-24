@@ -50,7 +50,7 @@ def deterministic_ddim_batch(
     seeds: list[int],
     steps: int,
 ) -> torch.Tensor:
-    """Generate normalized matrices with the final public-demo sampler.
+    """Generate normalized matrices with the final released sampler.
 
     The reverse process uses eta=0. At every step, x0 is restricted to the
     normalized training range [0, 1], and epsilon is recomputed consistently

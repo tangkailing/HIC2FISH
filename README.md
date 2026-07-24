@@ -56,12 +56,15 @@ Core dependencies include:
 Clone the repository and install the required packages:
 
 ```bash
-git clone <repository-url>
-cd HiC2FISH
-pip install -r requirements.txt
+git clone https://github.com/tangkailing/HIC2FISH.git
+cd HIC2FISH
+python -m venv .venv
+source .venv/bin/activate
+python -m pip install --upgrade pip
+python -m pip install -r requirements.txt
 ```
 
-The pretrained checkpoint and example input files should remain in their default directories:
+For Windows PowerShell, activate the environment with `.venv\Scripts\Activate.ps1` before installing requirements. The pretrained checkpoint and example input files should remain in their default directories:
 
 ```text
 pretrained/hic2fish.pt
@@ -121,7 +124,7 @@ Use `--show` to open the interactive visualization automatically after generatio
 python run.py --show
 ```
 
-Run `python run.py --help` to view all available arguments, including custom input, checkpoint and output paths.
+Run `python run.py --help` to view all available arguments, including custom input, checkpoint and output paths. The currently supplied pretrained checkpoint was trained for 50×50 matrices only, so generation inputs must resolve to one 50×50 Hi-C matrix and the reference centroid, when provided for evaluation, must also be 50×50.
 
 ### 3. Inspect the results
 
@@ -138,19 +141,50 @@ For the supplied example, 100 generated matrices produced a Centroid-PCC of appr
   <img src="docs/figures/hic2fish_example_output.png" width="900" alt="HiC2FISH example output">
 </p>
 
-The blue structure represents the experimental DNA-FISH ensemble centroid and the red structure represents the HiC2FISH-generated ensemble centroid. 
+The blue structure represents the experimental DNA-FISH ensemble centroid and the red structure represents the HiC2FISH-generated ensemble centroid. Metric MDS embeds each 50-locus centroid distance matrix into three dimensions so relative locus geometry can be inspected interactively; the coordinates are median-distance and radius normalized for shape comparison, not for absolute distance quantification.
+
+### 4. Lightweight CPU installation check
+
+After installation, verify imports, shape handling and CPU checkpoint loading without launching full ensemble generation:
+
+```bash
+python run.py --device cpu --num-samples 2 --ddim-steps 1 --generation-batch-size 1
+```
+
+This smoke test should complete on a CPU-only machine and writes the same output file names as a full run.
+
+## NumPy input shapes
+
+`run.py` accepts common `.npy` layouts and selects a single matrix with `--hic-index`:
+
+- `(50, 50)`: one matrix; only `--hic-index 0` is valid.
+- `(50, 50, 1)`: one channels-last matrix; only `--hic-index 0` is valid.
+- `(n, 50, 50)`: a stack of matrices; `--hic-index` selects the stack element.
+- `(n, 50, 50, 1)`: a channels-last stack.
+- `(n, 1, 50, 50)`: a channels-first stack.
+
+All selected matrices must contain finite numeric values and must become exactly 50×50 before normalization because the released pretrained model accepts only 50×50 inputs.
+
 
 ## Tutorial: preparing Hi-C and DNA-FISH data
 
 Raw DNA-FISH coordinates are supplied as Excel workbooks containing a trace identifier, three-dimensional coordinates and genomic probe intervals. Hi-C contacts are read from a multi-resolution Cooler (`.mcool`) file.
 
-Copy `data/preprocessing_manifest.csv`, add one row for each cell type and genomic window, and provide the corresponding input paths and genomic region. The manifest fields are:
+Copy `data/preprocessing_manifest.csv`, add one row for each cell type and genomic window, and provide the corresponding input paths and genomic region. The manifest template has the exact columns consumed by `hic2fish/preprocessing.py`:
 
-```text
-condition_id, fish_xlsx, fish_sheet, mcool_path, chromosome,
-region_start, region_end, resolution, balance,
-coordinate_scale_to_um, split
-```
+| Field | Description |
+| --- | --- |
+| `condition_id` | Unique label for one biological condition/genomic window; duplicate IDs are rejected. |
+| `fish_xlsx` | Path to the raw DNA-FISH Excel workbook, relative to the manifest file or absolute. |
+| `fish_sheet` | Optional sheet name or zero-based sheet index; leave blank to use pandas/openpyxl defaults. |
+| `mcool_path` | Path to the multi-resolution Cooler (`.mcool`) file, relative to the manifest file or absolute. |
+| `chromosome` | Chromosome to extract, such as `chr21` or `21`; both styles are reconciled against the Cooler file. |
+| `region_start` | Zero-based genomic start coordinate in base pairs. |
+| `region_end` | Genomic end coordinate in base pairs; probe midpoints must be less than this value. |
+| `resolution` | Cooler resolution in base pairs, used in the URI `::resolutions/{resolution}`. |
+| `balance` | `true`/`false` flag controlling whether balanced Cooler contacts are fetched. |
+| `coordinate_scale_to_um` | Multiplicative factor converting workbook coordinates to micrometres; use `1` for micrometres and `0.001` for nanometres. |
+| `split` | `train`, `val` or `auto`; blank values are treated as `auto` and assigned with `--val-fraction`. |
 
 Run preprocessing with:
 
@@ -158,6 +192,8 @@ Run preprocessing with:
 python preprocess_hic2fish_data.py \
   --manifest data/preprocessing_manifest.csv
 ```
+
+Example processed arrays in this repository were derived from paired K562 datasets from the 4D Nucleome Data Portal: bulk in situ Hi-C file 4DNFI18UHVRO and multiplexed DNA-FISH experiment set 4DNEST5FUQKC for `chr21:28,000,000-30,000,000`. Raw workbooks and `.mcool` files are not required to run the supplied generation workflow, but they are required if you regenerate `data/processed/`.
 
 The preprocessing workflow:
 
@@ -177,7 +213,7 @@ The resulting arrays are written to `data/processed/`. Existing files are preser
 The included workflow reports two complementary ensemble-level measurements:
 
 - **Centroid-PCC** measures the Pearson correlation between the strict lower triangles of the generated and experimental ensemble-centroid distance matrices.
-- **Generated mean pairwise PCC** measures the average correlation among independently generated single-cell matrices under the same Hi-C condition. Lower values indicate less-correlated generated samples and should be interpreted together with DNA-FISH agreement.
+- **Generated mean pairwise PCC** measures the average lower-triangle correlation among independently generated single-cell matrices under the same Hi-C condition. Values near 1 indicate very similar generated cells, while lower values indicate greater ensemble diversity; interpret this diversity together with Centroid-PCC rather than as a standalone accuracy score.
 
 The experimental DNA-FISH centroid is used only as an evaluation and visualization reference. It is not supplied to the denoising network and is not used to select individual generated cells.
 

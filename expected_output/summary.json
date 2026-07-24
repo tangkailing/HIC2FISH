@@ -1,5 +1,5 @@
 {
-  "checkpoint": "D:\\new\\models\\hic2fish_demo_retrained\\HiC2FISH-demo\\pretrained\\hic2fish.pt",
+  "checkpoint": "D:\\new\\models\\hic2fish_retrained\\HiC2FISH\\pretrained\\hic2fish.pt",
   "num_generated_cells": 100,
   "ddim_steps": 100,
   "eta": 0.0,
@@ -131,6 +131,6 @@
     "generated_centroid_median_distance_um": 1.668630884193351,
     "fish_mds_raw_stress": 33.82500074765694,
     "generated_mds_raw_stress": 48.76738189815993,
-    "html_path": "D:\\new\\models\\hic2fish_demo_retrained\\HiC2FISH-demo\\output\\centroid_3d_comparison.html"
+    "html_path": "D:\\new\\models\\hic2fish_retrained\\HiC2FISH\\output\\centroid_3d_comparison.html"
   }
 }

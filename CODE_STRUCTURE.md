@@ -10,13 +10,13 @@ inside the `hic2fish` package.
 | `hic2fish/io.py` | Checkpoint loading, scaler loading and input validation |
 | `hic2fish/metrics.py` | Centroid-PCC support, diversity and validity checks |
 | `hic2fish/visualization.py` | MDS reconstruction and interactive 3D output |
-| `hic2fish/demo.py` | End-to-end demo orchestration |
+| `hic2fish/generate.py` | End-to-end generation orchestration |
 | `hic2fish/preprocessing.py` | Raw Excel/.mcool preprocessing pipeline |
 
-Run the public demo from the repository root:
+Run the generation workflow from the repository root:
 
 ```bash
-python run_demo.py
+python run.py
 ```
 
 Prepare data after filling `data/preprocessing_manifest.csv`:

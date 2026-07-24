@@ -1,4 +1,8 @@
 numpy>=1.24
 torch>=2.0
+scipy>=1.10
+pandas>=2.0
+openpyxl>=3.1
+cooler>=0.9
 plotly>=5.18
 scikit-learn>=1.3

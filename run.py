@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-"""Run the public HiC2FISH generation and visualization example."""
+"""Run the HiC2FISH generation and visualization workflow."""
 
-from hic2fish.test import main
+from hic2fish.generate import main
 
 
 if __name__ == "__main__":

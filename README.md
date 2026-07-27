@@ -228,3 +228,13 @@ The experimental DNA-FISH centroid is used only as an evaluation and visualizati
 - Only the strict lower triangle of each final generated matrix is retained and mirrored to obtain a symmetric matrix; diagonal entries are set to zero.
 - The interactive MDS output displays relative shape after scale normalization. Absolute distance analyses should use the generated matrices stored in micrometres.
 
+## Citation
+
+A manuscript describing HiC2FISH is currently under review.
+Citation information will be updated upon publication.
+
+## Contact
+
+Please open a GitHub issue for software questions.
+For research-related inquiries, contact li.tang@yale.edu
+

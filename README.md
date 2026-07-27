@@ -137,7 +137,7 @@ Generated files are written to `output/`. The principal outputs are:
 - `summary.json`: settings, evaluation metrics and numerical-validity checks;
 - `centroid_3d_comparison.html`: interactive comparison of relative centroid geometry.
 
-For the supplied example, 100 generated matrices produced a Centroid-PCC of approximately 0.8612 and a generated mean pairwise PCC of approximately 0.0804. Small numerical differences can occur between software versions and hardware platforms.
+For the supplied example(K562 chr21:28,000,000–30,000,000), 100 generated matrices produced a Centroid-PCC of approximately 0.8612 and a generated mean pairwise PCC of approximately 0.0804. Small numerical differences can occur between software versions and hardware platforms.
 
 <p align="center">
   <img src="docs/figures/hic2fish_example_output.png" width="900" alt="HiC2FISH example output">

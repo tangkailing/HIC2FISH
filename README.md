@@ -8,9 +8,21 @@
   </p>
 </div>
 
-<p align="center">
-  <img src="docs/figures/workflow.png" width="900" alt="HiC2FISH workflow">
-</p>
+## Contents
+
+* [Description](#description)
+* [Repository structure](#repository-structure)
+* [Requirements](#requirements)
+* [Installation](#installation)
+* [Tutorial: generating a single-cell ensemble](#tutorial-generating-a-single-cell-ensemble)
+  * [Run the supplied example](#1-run-the-supplied-example)
+  * [Specify generation settings](#2-specify-generation-settings)
+  * [Inspect the results](#3-inspect-the-results)
+  * [Lightweight CPU installation check](#4-lightweight-cpu-installation-check)
+* [NumPy input shapes](#numpy-input-shapes)
+* [Tutorial: preparing Hi-C and DNA-FISH data](#tutorial-preparing-hi-c-and-dna-fish-data)
+* [Evaluation](#evaluation)
+* [Reproducibility notes](#reproducibility-notes)
 
 ## Description
 

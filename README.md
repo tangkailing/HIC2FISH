@@ -53,6 +53,8 @@ Core dependencies include:
 
 ## Installation
 
+Install [Git LFS](https://git-lfs.com/) before cloning so the pretrained checkpoint and NumPy data are downloaded as real files rather than pointer text. For Windows PowerShell, activate the environment with `.venv\Scripts\Activate.ps1` before installing requirements. 
+
 Clone the repository and install the required packages:
 
 ```bash
@@ -66,7 +68,7 @@ python -m pip install --upgrade pip
 python -m pip install -r requirements.txt
 ```
 
-Install [Git LFS](https://git-lfs.com/) before cloning so the pretrained checkpoint and NumPy data are downloaded as real files rather than pointer text. For Windows PowerShell, activate the environment with `.venv\Scripts\Activate.ps1` before installing requirements. The pretrained checkpoint and example input files should remain in their default directories:
+The pretrained checkpoint and example input files should remain in their default directories:
 
 ```text
 pretrained/hic2fish.pt
@@ -225,10 +227,4 @@ The experimental DNA-FISH centroid is used only as an evaluation and visualizati
 - Generation uses deterministic DDIM sampling with `eta = 0`; independent cells are obtained from independently seeded initial Gaussian noise matrices.
 - Only the strict lower triangle of each final generated matrix is retained and mirrored to obtain a symmetric matrix; diagonal entries are set to zero.
 - The interactive MDS output displays relative shape after scale normalization. Absolute distance analyses should use the generated matrices stored in micrometres.
-
-## Citation
-
-
-
-## Contact
 

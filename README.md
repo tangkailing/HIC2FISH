@@ -100,11 +100,13 @@ python -m pip install -r requirements.txt
 python run.py --reference-fish-centroid-path data/example_data/example_dna_fish_centroid_um.npy --output-dir output/full_evaluation --show
 ```
 
-The default settings generate 100 cells using 100 deterministic DDIM steps. A
-successful run reports Centroid-PCC and generated mean pairwise PCC, saves the
-interactive three-dimensional comparison to
-`output/full_evaluation/centroid_3d_comparison.html`, and opens it in the
-default browser.
+The default settings generate 100 cells using 100 deterministic DDIM steps. All
+results are written to `output/full_evaluation/`, including the generated
+single-cell distance matrices, their ensemble centroid, and `summary.json`
+with the sampling settings and evaluation metrics. See [Outputs](#outputs) for
+a complete description of every generated file. Because this command uses
+`--show`, the interactive three-dimensional comparison is also generated and
+opened automatically.
 
 The supplied DNA-FISH centroid is used only for evaluation and visualization.
 It is not an input to the diffusion model and is not required when generating

@@ -124,7 +124,7 @@ The released inference entry point accepts NumPy matrices, not a raw `.mcool` fi
 
 ### 2. Evaluate against optional DNA-FISH
 
-When an experimental DNA-FISH ensemble centroid is available for the same cell type, provide it explicitly, example_dna_fish_centroid_um.npy is computed from raw DNA-FISH data.
+When an experimental DNA-FISH ensemble centroid is available for the same cell type, provide it explicitly, example_dna_fish_centroid_um.npy is computed from DNA-FISH data.
 
 ```bash
 python run.py \

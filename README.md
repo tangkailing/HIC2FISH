@@ -124,7 +124,11 @@ The released inference entry point accepts NumPy matrices, not a raw `.mcool` fi
 
 ### 2. Evaluate against optional DNA-FISH
 
-When an experimental DNA-FISH ensemble centroid is available for the same cell type, locus and probe ordering, provide it explicitly:
+Experimental DNA-FISH is not required for generation. When reference-based evaluation is desired, however, the experimental measurements must first be converted into a set of single-cell distance matrices that match the Hi-C condition in cell type, genomic region, locus count and locus ordering.
+
+Prepare the experimental DNA-FISH reference
+
+Raw DNA-FISH coordinate workbooks should first be processed using the paired-data preprocessing workflow described below. This produces single-cell DNA-FISH distance matrices such as Y_val.npy, with shape (n_cells, 50, 50, 1).
 
 ```bash
 python run.py \

@@ -58,10 +58,6 @@ The repository supports three distinct workflows:
 | Evaluate generated structures | The matching Hi-C matrix plus an experimental DNA-FISH ensemble centroid | Generation outputs, Centroid-PCC and comparative 3D visualization |
 | Rebuild paired training data | Raw Hi-C `.mcool` and DNA-FISH coordinate workbook | Matched Hi-C–DNA-FISH training and validation arrays |
 
-> **Important:** the released checkpoint accepts exactly 50 ordered genomic
-> loci. The selected Hi-C matrix, and the optional DNA-FISH reference when
-> supplied, must therefore resolve to 50 × 50.
-
 ## Quick start
 
 The shortest tested path is to clone the repository with Git LFS, install the
@@ -413,40 +409,6 @@ Reference-based evaluation is optional. The experimental DNA-FISH reference
 must represent the same cell type, genomic interval, 50 loci and locus order as
 the Hi-C condition.
 
-The reference file is not the raw coordinate workbook. First convert the raw
-DNA-FISH coordinates into a stack of single-cell distance matrices using the
-preprocessing workflow. For evaluation, use cells that were not used to train
-or fine-tune the evaluated model. For a processed dataset containing one
-condition, an experimental ensemble centroid can be calculated from
-`Y_val.npy` as follows:
-
-```python
-from pathlib import Path
-
-import numpy as np
-
-fish_matrices = np.load("data/processed/Y_val.npy")
-if fish_matrices.ndim == 4 and fish_matrices.shape[-1] == 1:
-    fish_matrices = fish_matrices[..., 0]
-
-if fish_matrices.ndim != 3 or fish_matrices.shape[1:] != (50, 50):
-    raise ValueError(
-        "Expected DNA-FISH matrices with shape (n_cells, 50, 50)."
-    )
-
-fish_centroid = np.mean(fish_matrices, axis=0, dtype=np.float64)
-fish_centroid = 0.5 * (fish_centroid + fish_centroid.T)
-np.fill_diagonal(fish_centroid, 0.0)
-
-output_path = Path("data/evaluation/dna_fish_centroid_um.npy")
-output_path.parent.mkdir(parents=True, exist_ok=True)
-np.save(output_path, fish_centroid.astype(np.float32))
-```
-
-Do not average cells from different conditions. If a processed directory
-contains multiple conditions, prepare each condition separately before
-calculating its reference centroid.
-
 Run reference-based evaluation with:
 
 ```bash
@@ -471,10 +433,7 @@ Centroid-PCC is calculated only when a reference centroid is supplied.
 The comparative HTML uses metric multidimensional scaling to display the
 relative geometry of the two ensemble centroids. Each distance matrix is
 normalized by its own median lower-triangular distance, and each coordinate
-configuration is normalized to unit radius of gyration. The displayed
-coordinates are therefore dimensionless and should not be interpreted as
-absolute micrometre-scale reconstructions. Use the generated distance matrices
-for quantitative distance analyses.
+configuration is normalized to unit radius of gyration. 
 
 <p align="center">
   <img src="docs/figures/hic2fish_example_output.png"
@@ -573,17 +532,9 @@ rebuilding the processed data.
 
 ## Citation
 
-A manuscript describing HiC2FISH is currently under review. Citation
-information will be updated upon publication.
 
 ## License
 
-No software license has currently been assigned to this repository. Until a
-license is added, please contact the authors before reusing, redistributing or
-modifying the code outside this repository.
 
 ## Contact
 
-Please open a GitHub issue for software questions.
-
-For research-related inquiries, contact `li.tang@yale.edu`.

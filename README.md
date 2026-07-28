@@ -15,18 +15,19 @@
 * [Requirements](#requirements)
 * [Installation](#installation)
 * [Tutorial: generating a single-cell ensemble](#tutorial-generating-a-single-cell-ensemble)
-  * [Run the supplied example](#1-run-the-supplied-example)
-  * [Specify generation settings](#2-specify-generation-settings)
-  * [Inspect the results](#3-inspect-the-results)
-  * [Lightweight CPU installation check](#4-lightweight-cpu-installation-check)
+  * [Generate from Hi-C only](#1-generate-from-hi-c-only)
+  * [Evaluate against optional DNA-FISH](#2-evaluate-against-optional-dna-fish)
+  * [Specify generation settings](#3-specify-generation-settings)
+  * [Inspect the results](#4-inspect-the-results)
+  * [Lightweight CPU installation check](#5-lightweight-cpu-installation-check)
 * [NumPy input shapes](#numpy-input-shapes)
-* [Tutorial: preparing Hi-C and DNA-FISH data](#tutorial-preparing-hi-c-and-dna-fish-data)
+* [Tutorial: preparing paired training data](#tutorial-preparing-paired-training-data)
 * [Evaluation](#evaluation)
 * [Reproducibility notes](#reproducibility-notes)
 
 ## Description
 
-HiC2FISH learns the conditional distribution of single-cell DNA-FISH distance matrices given a population Hi-C contact map. A Hi-C contact matrix and a noisy DNA-FISH distance matrix are supplied to a Hi-C-conditioned denoising U-Net. Starting from independently sampled Gaussian noise, deterministic DDIM sampling generates an ensemble of symmetric 50 × 50 distance matrices representing alternative single-cell chromatin conformations under the same Hi-C condition.
+HiC2FISH learns the conditional distribution of single-cell DNA-FISH-calibrated distance matrices given a population Hi-C contact map. During inference, a preprocessed Hi-C contact matrix conditions the denoising of independently sampled Gaussian noise; experimental DNA-FISH from the new condition is not an input to the network. Deterministic DDIM sampling generates an ensemble of symmetric 50 × 50 distance matrices representing alternative single-cell chromatin conformations under the same Hi-C condition. An experimental DNA-FISH centroid can be supplied optionally for evaluation and comparative visualization.
 
 This repository contains the model architecture, diffusion sampler, preprocessing workflow, evaluation functions, interactive three-dimensional visualization, example inputs, processed matrices and pretrained model weights.
 
@@ -85,13 +86,15 @@ The pretrained checkpoint and example input files should remain in their default
 ```text
 pretrained/hic2fish.pt
 data/example_data/example_hic.npy
-data/example_data/example_dna_fish_centroid_um.npy
 data/example_data/normalization_scalers.npz
+data/example_data/example_dna_fish_centroid_um.npy  # optional evaluation reference
 ```
 
 ## Tutorial: generating a single-cell ensemble
 
-### 1. Run the supplied example
+Generation and reference-based evaluation are separate operations. Inference requires a preprocessed Hi-C matrix, the pretrained checkpoint and the training-derived normalization scalers. DNA-FISH from the new condition is optional and is used only for evaluation.
+
+### 1. Generate from Hi-C only
 
 From the repository root, run:
 
@@ -102,20 +105,60 @@ python run.py
 The default configuration:
 
 - loads one 50 × 50 bulk Hi-C condition;
-- generates 100 single-cell DNA-FISH distance matrices;
+- generates 100 single-cell DNA-FISH-calibrated distance matrices;
 - uses 100 deterministic DDIM steps with `eta = 0`;
 - uses random seeds 2026–2125;
-- calculates Centroid-PCC and generated mean pairwise PCC;
+- calculates generated mean pairwise PCC;
 - validates matrix finiteness, non-negativity, symmetry and zero diagonals;
-- reconstructs the experimental and generated ensemble centroids by metric MDS;
-- writes an interactive three-dimensional HTML comparison.
+- writes the generated matrices and their ensemble centroid.
 
-### 2. Specify generation settings
+No experimental DNA-FISH is required for this generation path. Without a reference centroid, Centroid-PCC and the experimental-versus-generated comparative HTML are skipped.
+
+To use a custom preprocessed Hi-C matrix:
+
+```bash
+python run.py --hic-path path/to/hic_50x50.npy
+```
+
+The released inference entry point accepts NumPy matrices, not a raw `.mcool` file. A raw Hi-C file must first be reduced to the selected genomic region and represented as a 50 × 50 matrix consistent with the model input.
+
+### 2. Evaluate against optional DNA-FISH
+
+When an experimental DNA-FISH ensemble centroid is available for the same cell type, locus and probe ordering, provide it explicitly:
+
+```bash
+python run.py \
+  --reference-fish-centroid-path data/example_data/example_dna_fish_centroid_um.npy
+```
+
+On Windows Command Prompt:
+
+```bat
+python run.py ^
+  --reference-fish-centroid-path data\example_data\example_dna_fish_centroid_um.npy
+```
+
+This additionally:
+
+- calculates Centroid-PCC between the generated and experimental ensemble centroids;
+- reconstructs both centroids by metric MDS;
+- writes an interactive three-dimensional comparison.
+
+For the supplied K562 example at `chr21:28,000,000–30,000,000`, 100 generated matrices produced a Centroid-PCC of approximately 0.8612 and a generated mean pairwise PCC of approximately 0.0804. Small numerical differences can occur between software versions and hardware platforms.
+
+<p align="center">
+  <img src="docs/figures/hic2fish_example_output.png" width="900" alt="HiC2FISH example output">
+</p>
+
+The blue structure represents the experimental DNA-FISH ensemble centroid and the red structure represents the HiC2FISH-generated ensemble centroid. Metric MDS embeds each 50-locus centroid distance matrix into three dimensions so relative locus geometry can be inspected interactively; the coordinates are median-distance and radius normalized for shape comparison, not for absolute distance quantification.
+
+### 3. Specify generation settings
 
 The principal options can be supplied from the command line:
 
 ```bash
 python run.py \
+  --hic-path path/to/hic_50x50.npy \
   --num-samples 100 \
   --ddim-steps 100 \
   --generation-batch-size 2 \
@@ -127,6 +170,7 @@ On Windows Command Prompt, use `^` instead of `\` for line continuation:
 
 ```bat
 python run.py ^
+  --hic-path path\to\hic_50x50.npy ^
   --num-samples 100 ^
   --ddim-steps 100 ^
   --generation-batch-size 2 ^
@@ -134,34 +178,28 @@ python run.py ^
   --device auto
 ```
 
-Use `--show` to open the interactive visualization automatically after generation:
+Use `--show` together with `--reference-fish-centroid-path` to open the comparative visualization automatically after evaluation. Run `python run.py --help` to view all available arguments.
 
-```bash
-python run.py --show
-```
+The supplied pretrained checkpoint was trained for 50 × 50 matrices only, so the selected Hi-C matrix must resolve to exactly 50 × 50. A reference DNA-FISH centroid, when provided, must describe the same loci in the same order and must also be 50 × 50.
 
-Run `python run.py --help` to view all available arguments, including custom input, checkpoint and output paths. The currently supplied pretrained checkpoint was trained for 50×50 matrices only, so generation inputs must resolve to one 50×50 Hi-C matrix and the reference centroid, when provided for evaluation, must also be 50×50.
+### 4. Inspect the results
 
-### 3. Inspect the results
+The following files are always written to the selected output directory:
 
-Generated files are written to `output/`. The principal outputs are:
-
+- `input_hic.npy`: the selected Hi-C condition;
 - `generated_single_cell_distances_um.npy`: generated single-cell distance matrices in micrometres;
 - `generated_ensemble_centroid_um.npy`: mean generated distance matrix;
-- `summary.json`: settings, evaluation metrics and numerical-validity checks;
-- `centroid_3d_comparison.html`: interactive comparison of relative centroid geometry.
+- `summary.json`: settings, generated-ensemble diversity, evaluation status and numerical-validity checks.
 
-For the supplied example(K562 chr21:28,000,000–30,000,000), 100 generated matrices produced a Centroid-PCC of approximately 0.8612 and a generated mean pairwise PCC of approximately 0.0804. Small numerical differences can occur between software versions and hardware platforms.
+When `--reference-fish-centroid-path` is supplied, the workflow also writes:
 
-<p align="center">
-  <img src="docs/figures/hic2fish_example_output.png" width="900" alt="HiC2FISH example output">
-</p>
+- `reference_dna_fish_centroid_um.npy`: the selected experimental reference centroid;
+- `centroid_3d_comparison.html`: interactive comparison of relative centroid geometry;
+- the relative-distance and MDS-coordinate arrays used by the visualization.
 
-The blue structure represents the experimental DNA-FISH ensemble centroid and the red structure represents the HiC2FISH-generated ensemble centroid. Metric MDS embeds each 50-locus centroid distance matrix into three dimensions so relative locus geometry can be inspected interactively; the coordinates are median-distance and radius normalized for shape comparison, not for absolute distance quantification.
+### 5. Lightweight CPU installation check
 
-### 4. Lightweight CPU installation check
-
-After Git LFS files have been downloaded, run a deliberately reduced two-sample, one-step inference to verify model loading, shape handling, CPU execution and output writing:
+After Git LFS files have been downloaded, run a deliberately reduced two-sample, one-step Hi-C-only inference to verify model loading, shape handling, CPU execution and output writing:
 
 ```bash
 python run.py --device cpu --num-samples 2 --ddim-steps 1 --generation-batch-size 1 --output-dir output/cpu_smoke_test
@@ -182,9 +220,9 @@ This is an actual reduced inference run rather than the default 100-sample workf
 All selected matrices must contain finite numeric values and must become exactly 50×50 before normalization because the released pretrained model accepts only 50×50 inputs.
 
 
-## Tutorial: preparing Hi-C and DNA-FISH data
+## Tutorial: preparing paired training data
 
-Raw DNA-FISH coordinates are supplied as Excel workbooks containing a trace identifier, three-dimensional coordinates and genomic probe intervals. Hi-C contacts are read from a multi-resolution Cooler (`.mcool`) file.
+This section reconstructs paired Hi-C–DNA-FISH training and validation arrays. It is not required to run inference with the released pretrained checkpoint. Raw DNA-FISH coordinates are supplied as Excel workbooks containing a trace identifier, three-dimensional coordinates and genomic probe intervals. Hi-C contacts are read from a multi-resolution Cooler (`.mcool`) file.
 
 Copy `data/preprocessing_manifest.csv`, add one row for each cell type and genomic window, and provide the corresponding input paths and genomic region. The manifest template has the exact columns consumed by `hic2fish/preprocessing.py`:
 
@@ -226,7 +264,7 @@ The resulting arrays are written to `data/processed/`. Existing files are preser
 
 ## Evaluation
 
-The included workflow reports two complementary ensemble-level measurements:
+When an optional reference DNA-FISH centroid is supplied, the workflow reports Centroid-PCC in addition to the generated-ensemble diversity measurement:
 
 - **Centroid-PCC** measures the Pearson correlation between the strict lower triangles of the generated and experimental ensemble-centroid distance matrices.
 - **Generated mean pairwise PCC** measures the average lower-triangle correlation among independently generated single-cell matrices under the same Hi-C condition. Values near 1 indicate very similar generated cells, while lower values indicate greater ensemble diversity; interpret this diversity together with Centroid-PCC rather than as a standalone accuracy score.

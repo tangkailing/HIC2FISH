@@ -540,10 +540,15 @@ in the repository and should be obtained from the source portal when
 rebuilding the processed data.
 
 ## Citation
-
+A manuscript describing HiC2FISH is currently under review. Citation information will be updated upon publication.
 
 ## License
-
+This project is licensed under the MIT License. See the LICENSE file for details.
 
 ## Contact
+For questions, bug reports or feature requests, please open a GitHub issue.
 
+For research-related inquiries, contact:
+
+Li Tang
+Email: li.tang@yale.edu

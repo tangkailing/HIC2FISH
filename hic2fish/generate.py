@@ -46,7 +46,12 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--reference-fish-centroid-path",
         type=Path,
-        default=EXAMPLE_DATA_DIR / "example_dna_fish_centroid_um.npy",
+        default=None,
+        help=(
+            "Optional 50x50 experimental DNA-FISH ensemble centroid used "
+            "only for Centroid-PCC and comparative visualization. Omit this "
+            "argument for Hi-C-only generation."
+        ),
     )
     parser.add_argument(
         "--scaler-path",
@@ -77,12 +82,13 @@ def build_parser() -> argparse.ArgumentParser:
 
 
 def validate_arguments(args: argparse.Namespace) -> None:
-    required = (
+    required = [
         args.model_path,
         args.hic_path,
-        args.reference_fish_centroid_path,
         args.scaler_path,
-    )
+    ]
+    if args.reference_fish_centroid_path is not None:
+        required.append(args.reference_fish_centroid_path)
     missing = [str(path) for path in required if not path.is_file()]
     if missing:
         raise FileNotFoundError(
@@ -118,13 +124,17 @@ def run(args: argparse.Namespace) -> dict[str, object]:
         args.hic_index,
         "Hi-C",
     )
-    fish_centroid_um = select_matrix(
-        np.load(args.reference_fish_centroid_path),
-        0,
-        "reference DNA-FISH centroid",
-    )
-    fish_centroid_um = 0.5 * (fish_centroid_um + fish_centroid_um.T)
-    np.fill_diagonal(fish_centroid_um, 0.0)
+    fish_centroid_um: np.ndarray | None = None
+    if args.reference_fish_centroid_path is not None:
+        fish_centroid_um = select_matrix(
+            np.load(args.reference_fish_centroid_path),
+            0,
+            "reference DNA-FISH centroid",
+        )
+        fish_centroid_um = 0.5 * (
+            fish_centroid_um + fish_centroid_um.T
+        )
+        np.fill_diagonal(fish_centroid_um, 0.0)
 
     condition = normalize_hic(hic_raw, hic_min, hic_max, device)
     model = load_checkpoint(args.model_path, device)
@@ -149,17 +159,20 @@ def run(args: argparse.Namespace) -> dict[str, object]:
         raise RuntimeError(f"Generated ensemble failed validation: {validity}")
 
     generated_centroid_um = np.mean(generated_um, axis=0)
-    centroid_pcc = pearson_correlation(
-        lower_triangle_vectors(generated_centroid_um)[0],
-        lower_triangle_vectors(fish_centroid_um)[0],
-    )
+    centroid_pcc: float | None = None
+    if fish_centroid_um is not None:
+        centroid_pcc = pearson_correlation(
+            lower_triangle_vectors(generated_centroid_um)[0],
+            lower_triangle_vectors(fish_centroid_um)[0],
+        )
     generated_diversity = mean_pairwise_pcc(generated_um)
 
     np.save(args.output_dir / "input_hic.npy", hic_raw)
-    np.save(
-        args.output_dir / "reference_dna_fish_centroid_um.npy",
-        fish_centroid_um,
-    )
+    if fish_centroid_um is not None:
+        np.save(
+            args.output_dir / "reference_dna_fish_centroid_um.npy",
+            fish_centroid_um,
+        )
     np.save(
         args.output_dir / "generated_single_cell_distances_um.npy",
         generated_um,
@@ -169,19 +182,22 @@ def run(args: argparse.Namespace) -> dict[str, object]:
         generated_centroid_um,
     )
 
-    visualization = write_relative_centroid_html(
-        fish_centroid_um=fish_centroid_um,
-        generated_centroid_um=generated_centroid_um,
-        centroid_pcc=centroid_pcc,
-        generated_diversity=generated_diversity,
-        generated_count=args.num_samples,
-        output_dir=args.output_dir,
-        random_state=args.base_seed,
-    )
-    visualization_summary = dict(visualization)
-    visualization_summary["html_path"] = portable_path(
-        visualization["html_path"]
-    )
+    visualization: dict[str, object] | None = None
+    visualization_summary: dict[str, object] | None = None
+    if fish_centroid_um is not None and centroid_pcc is not None:
+        visualization = write_relative_centroid_html(
+            fish_centroid_um=fish_centroid_um,
+            generated_centroid_um=generated_centroid_um,
+            centroid_pcc=centroid_pcc,
+            generated_diversity=generated_diversity,
+            generated_count=args.num_samples,
+            output_dir=args.output_dir,
+            random_state=args.base_seed,
+        )
+        visualization_summary = dict(visualization)
+        visualization_summary["html_path"] = portable_path(
+            visualization["html_path"]
+        )
     summary: dict[str, object] = {
         "checkpoint": portable_path(args.model_path),
         "num_generated_cells": args.num_samples,
@@ -189,6 +205,12 @@ def run(args: argparse.Namespace) -> dict[str, object]:
         "eta": 0.0,
         "base_seed": args.base_seed,
         "seeds": seeds,
+        "reference_fish_centroid": (
+            portable_path(args.reference_fish_centroid_path)
+            if args.reference_fish_centroid_path is not None
+            else None
+        ),
+        "reference_evaluation_performed": fish_centroid_um is not None,
         "centroid_pcc": centroid_pcc,
         "generated_mean_pairwise_pcc": generated_diversity,
         "representative_cell_selection": False,
@@ -208,14 +230,34 @@ def run(args: argparse.Namespace) -> dict[str, object]:
     ) as handle:
         json.dump(summary, handle, indent=2, ensure_ascii=False)
 
-    print("\nHiC2FISH centroid completed.")
-    print(f"Centroid-PCC: {centroid_pcc:.4f}")
+    print("\nHiC2FISH generation completed.")
+    if centroid_pcc is None:
+        print(
+            "Centroid-PCC: not calculated "
+            "(no reference DNA-FISH centroid provided)"
+        )
+    else:
+        print(f"Centroid-PCC: {centroid_pcc:.4f}")
     print(f"Generated mean pairwise PCC: {generated_diversity:.4f}")
     print(f"Output directory: {args.output_dir}")
-    print(f"Interactive HTML: {visualization['html_path']}")
+    if visualization is None:
+        print(
+            "Comparative HTML: not created "
+            "(no reference DNA-FISH centroid provided)"
+        )
+    else:
+        print(f"Comparative HTML: {visualization['html_path']}")
 
     if args.show:
-        webbrowser.open(Path(visualization["html_path"]).resolve().as_uri())
+        if visualization is None:
+            print(
+                "--show was requested, but comparative visualization requires "
+                "--reference-fish-centroid-path."
+            )
+        else:
+            webbrowser.open(
+                Path(visualization["html_path"]).resolve().as_uri()
+            )
     return summary
 
 

@@ -45,11 +45,6 @@ conditions the denoising of independently sampled Gaussian noise. The released
 workflow produces symmetric 50 × 50 distance matrices in micrometres, with one
 matrix representing one generated cell.
 
-Experimental DNA-FISH from the new condition is **not required for
-generation**. It is used during model development as the spatial training
-target and can be supplied optionally after generation for reference-based
-evaluation and visualization.
-
 The repository supports three distinct workflows:
 
 | Goal | Required user data | Result |

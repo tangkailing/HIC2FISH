@@ -60,9 +60,12 @@ The repository supports three distinct workflows:
 
 ## Quick start
 
-The shortest tested path is to clone the repository with Git LFS, install the
-Python requirements in an isolated environment and run a lightweight CPU
-check.
+The quickest route to a complete and visually interpretable result is to run
+the supplied K562 example. HiC2FISH generates 100 single-cell distance matrices
+using only the supplied Hi-C condition, and then compares the generated
+ensemble centroid with the supplied experimental DNA-FISH centroid.
+
+Clone the repository with Git LFS and create an isolated Python environment:
 
 ```bash
 git lfs install
@@ -89,16 +92,25 @@ Activate the environment using the command for your operating system:
 source .venv/bin/activate
 ```
 
-Install the dependencies and run the CPU check:
+Install the dependencies and run the complete supplied example:
 
 ```bash
 python -m pip install --upgrade pip
 python -m pip install -r requirements.txt
-python run.py --device cpu --num-samples 2 --ddim-steps 1 --generation-batch-size 1 --output-dir output/cpu_smoke_test
+python run.py --reference-fish-centroid-path data/example_data/example_dna_fish_centroid_um.npy --output-dir output/full_evaluation --show
 ```
 
-A successful check ends with `HiC2FISH generation completed.` and writes two
-generated distance matrices to `output/cpu_smoke_test/`.
+The default settings generate 100 cells using 100 deterministic DDIM steps. A
+successful run reports Centroid-PCC and generated mean pairwise PCC, saves the
+interactive three-dimensional comparison to
+`output/full_evaluation/centroid_3d_comparison.html`, and opens it in the
+default browser.
+
+The supplied DNA-FISH centroid is used only for evaluation and visualization.
+It is not an input to the diffusion model and is not required when generating
+structures from a new Hi-C condition. The complete example may take longer on
+a CPU-only computer; use the [lightweight CPU check](#lightweight-cpu-check)
+below to verify the installation first.
 
 ## Installation
 
